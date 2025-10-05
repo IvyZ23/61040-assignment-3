@@ -1,11 +1,11 @@
 /**
- * LLM Integration for DayPlanner
- * 
- * Handles the requestAssignmentsFromLLM functionality using Google's Gemini API.
- * The LLM prompt is hardwired with user preferences and doesn't take external hints.
+ * LLM Integration for ItinerarySuggestions
+ *
+ * Handles the requestSuggestionsFromLLM functionality using Google's Gemini API.
+ *
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 /**
  * Configuration for API access
@@ -21,23 +21,27 @@ export class GeminiLLM {
         this.apiKey = config.apiKey;
     }
 
-    async executeLLM (prompt: string): Promise<string> {
+    async executeLLM(prompt: string): Promise<string> {
         try {
             // Initialize Gemini AI
             const genAI = new GoogleGenerativeAI(this.apiKey);
-            const model = genAI.getGenerativeModel({ 
+            const model = genAI.getGenerativeModel({
                 model: "gemini-2.5-flash-lite",
                 generationConfig: {
                     maxOutputTokens: 1000,
-                }
+                },
             });
             // Execute the LLM
             const result = await model.generateContent(prompt);
             const response = await result.response;
             const text = response.text();
-            return text;            
+            return text;
         } catch (error) {
-            console.error('❌ Error calling Gemini API:', (error as Error).message);
+            console.error(
+                "❌ Error calling Gemini API:",
+                (error as Error).message
+            );
             throw error;
-        }    }
+        }
+    }
 }

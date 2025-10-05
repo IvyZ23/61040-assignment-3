@@ -1,182 +1,137 @@
-# DayPlanner 
-A simple day planner. This implementation focuses on the core concept of organizing activities for a single day with both manual and AI-assisted scheduling.
+# Assignment 3
 
-## Concept: DayPlanner
+## Concept
 
-**Purpose**: Help you organize activities for a single day  
-**Principle**: You can add activities one at a time, assign them to times, and then observe the completed schedule
+### Orginal
 
-### Core State
-- **Activities**: Set of activities with title, duration, and optional startTime
-- **Assignments**: Set of activity-to-time assignments
-- **Time System**: All times in half-hour slots starting at midnight (0 = 12:00 AM, 13 = 6:30 AM)
+**concept** PlanItinerary [Trip]
 
-### Core Actions
-- `addActivity(title: string, duration: number): Activity`
-- `removeActivity(activity: Activity)`
-- `assignActivity(activity: Activity, startTime: number)`
-- `unassignActivity(activity: Activity)`
-- `requestAssignmentsFromLLM()` - AI-assisted scheduling with hardwired preferences
+**purpose** keep track of possible activities to be done during a trip or outting
 
-## Prerequisites
+**principle** an itinerary is created for a trip. Users can add and remove events from the intinerary. Added events await approval before being offically added. Reject events to remove them from the plan.
 
-- **Node.js** (version 14 or higher)
-- **TypeScript** (will be installed automatically)
-- **Google Gemini API Key** (free at [Google AI Studio](https://makersuite.google.com/app/apikey))
+**state**
 
-## Quick Setup
+a set of Itineraries with
 
-### 0. Clone the repo locally and navigate to it
-```cd intro-gemini-schedule```
+-   a trip Trip
+-   a set of Events
+-   a finalized Flag
 
-### 1. Install Dependencies
+a set of Events with
 
-```bash
-npm install
-```
+-   a name String
+-   a cost Number
+-   a time Date
+-   a pending Flag
+-   an approved Flag
 
-### 2. Add Your API Key
+**action**
 
-**Why use a template?** The `config.json` file contains your private API key and should never be committed to version control. The template approach lets you:
-- Keep the template file in git (safe to share)
-- Create your own `config.json` locally (keeps your API key private)
-- Easily set up the project on any machine
+create(trip:Trip): Itinerary
 
-**Step 1:** Copy the template file:
-```bash
-cp config.json.template config.json
-```
+-   **requires** itinerary for trip to not already exist
+-   **effects** creates new itinerary for trip
 
-**Step 2:** Edit `config.json` and add your API key:
-```json
-{
-  "apiKey": "YOUR_GEMINI_API_KEY_HERE"
-}
-```
+addEvent(name: String, cost: Number, itinerary: Itinerary, time: Date)
 
-**To get your API key:**
-1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Sign in with your Google account
-3. Click "Create API Key"
-4. Copy the key and paste it into `config.json` (replacing `YOUR_GEMINI_API_KEY_HERE`)
+-   **effects** add new pending event to the itinerary
 
-### 3. Run the Application
+updateEvent(event: Event, name: String, cost: Number, time: Date)
 
-**Run all test cases:**
-```bash
-npm start
-```
+-   **requires** event to exist
+-   **effects** updates event
 
-**Run specific test cases:**
-```bash
-npm run manual    # Manual scheduling only
-npm run llm       # LLM-assisted scheduling only
-npm run mixed     # Mixed manual + LLM scheduling
-```
+setEventApproval(event: Event, approved: Flag)
 
-## File Structure
+-   **requires** event to exist
+-   **effects** sets approval flag for itinerary and update pending to false
 
-```
-dayplanner/
-├── package.json              # Dependencies and scripts
-├── tsconfig.json             # TypeScript configuration
-├── config.json               # Your Gemini API key
-├── dayplanner-types.ts       # Core type definitions
-├── dayplanner.ts             # DayPlanner class implementation
-├── dayplanner-llm.ts         # LLM integration
-├── dayplanner-tests.ts       # Test cases and examples
-├── dist/                     # Compiled JavaScript output
-└── README.md                 # This file
-```
+finalizeItinerary(itinerary: Itinerary, finalized: Flag)
 
-## Test Cases
+-   **requires** itinerary to exist
+-   **effects** sets itinerary finalized to given flag
 
-The application includes three comprehensive test cases:
+### AI-Augmented
 
-### 1. Manual Scheduling
-Demonstrates adding activities and manually assigning them to time slots:
+We can augment AI into the itinerary planner so that we can provide users with a feature to suggest activities to add to the itinerary to users. This would allow users to plan out their trip more effortlessly:
 
-```typescript
-const planner = new DayPlanner();
-const breakfast = planner.addActivity('Breakfast', 1); // 30 minutes
-planner.assignActivity(breakfast, 14); // 7:00 AM
-```
+**concept** PlanItinerary [Trip]
 
-### 2. LLM-Assisted Scheduling
-Shows AI-powered scheduling with hardwired preferences:
+**purpose** keep track of possible activities to be done during a trip or outting
 
-```typescript
-const planner = new DayPlanner();
-planner.addActivity('Morning Jog', 2);
-planner.addActivity('Math Homework', 4);
-await llm.requestAssignmentsFromLLM(planner);
-```
+**principle** an itinerary is created for a trip. Users can add and remove events from the intinerary. Added events await approval before being offically added. Reject events to remove them from the plan.
 
-### 3. Mixed Scheduling
-Combines manual assignments with AI assistance for remaining activities.
+**state**
 
-## Sample Output
+a set of Itineraries with
 
-```
-📅 Daily Schedule
-==================
-7:00 AM - Breakfast (30 min)
-8:00 AM - Morning Workout (1 hours)
-10:00 AM - Study Session (1.5 hours)
-1:00 PM - Lunch (30 min)
-3:00 PM - Team Meeting (1 hours)
-7:00 PM - Dinner (30 min)
-9:00 PM - Evening Reading (1 hours)
+-   a trip Trip
+-   a set of Events
+-   a finalized Flag
+-   a budget Number
 
-📋 Unassigned Activities
-========================
-All activities are assigned!
-```
+a set of Events with
 
-## Key Features
+-   a name String
+-   a cost Number
+-   a location String
+-   a time Date
+-   a pending Flag
+-   an approved Flag
 
-- **Simple State Management**: Activities and assignments stored in memory
-- **Flexible Time System**: Half-hour slots from midnight (0-47)
-- **Query-Based Display**: Schedule generated on-demand, not stored sorted
-- **AI Integration**: Hardwired preferences in LLM prompt (no external hints)
-- **Conflict Detection**: Prevents overlapping activities
-- **Clean Architecture**: First principles implementation with no legacy code
+**action**
 
-## LLM Preferences (Hardwired)
+create(trip:Trip): Itinerary
 
-The AI uses these built-in preferences:
-- Exercise activities: Morning (6:00 AM - 10:00 AM)
-- Study/Classes: Focused hours (9:00 AM - 5:00 PM)
-- Meals: Regular intervals (breakfast 7-9 AM, lunch 12-1 PM, dinner 6-8 PM)
-- Social/Relaxation: Evenings (6:00 PM - 10:00 PM)
-- Avoid: Demanding activities after 10:00 PM
+-   **requires** itinerary for trip to not already exist
+-   **effects** creates new itinerary for trip
 
-## Troubleshooting
+addEvent(name: String, cost: Number, itinerary: Itinerary, time: Date)
 
-### "Could not load config.json"
-- Ensure `config.json` exists with your API key
-- Check JSON format is correct
+-   **effects** add new pending event to the itinerary
 
-### "Error calling Gemini API"
-- Verify API key is correct
-- Check internet connection
-- Ensure API access is enabled in Google AI Studio
+updateEvent(event: Event, name: String, cost: Number, time: Date)
 
-### Build Issues
-- Use `npm run build` to compile TypeScript
-- Check that all dependencies are installed with `npm install`
+-   **requires** event to exist
+-   **effects** updates event
 
-## Next Steps
+setEventApproval(event: Event, approved: Flag)
 
-Try extending the DayPlanner:
-- Add weekly scheduling
-- Implement activity categories
-- Add location information
-- Create a web interface
-- Add conflict resolution strategies
-- Implement recurring activities
+-   **requires** event to exist
+-   **effects** sets approval flag for itinerary and update pending to false
 
-## Resources
+finalizeItinerary(itinerary: Itinerary, finalized: Flag)
 
-- [Google Generative AI Documentation](https://ai.google.dev/docs)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+-   **requires** itinerary to exist
+-   **effects** sets itinerary finalized to given flag
+
+requestSuggestionFromLLM()
+
+-   **effects** returns suggestions of places to visit or dine at based on the trip's information, budget, and what's already on the itinerary
+
+## User Interaction
+
+After finalizing the dates and destination for their family trip to Rome, a user opens GroupGetaway and visits the trip’s planning page. They add a few must-see spots to the itinerary, but realize that it is still too empty for a 2-week vacation. The user remembers that the app offers an activity suggestion feature. They click “Get Suggestions” below the itinerary, and after a short moment, a list of recommended attractions and restaurants appears, tailored to their trip details and group budget. The user looks over the list and find some of the suggestions viable. They click the plus button next to each of these activities to add it to the itinerary for family approval. With a fuller itinerary, the user feels that they can still cram in some more activities, but with a tighter budger, they adjust the budget filter. They click the “Generate More” button and receive a fresh list of less costly suggestions. The user repeats this process until they have filled out their itinerary.
+
+Trip planning page:
+![Trip Planning Page](assets/tripplan.png)
+![Trip Planning Popup](assets/popup.png)
+
+## Test Cases and Prompts
+
+1. **Ambiguous destination for a trip** - A user is planning to go on a trip to Rome during their spring break. To plan their itinerary, the user opens our app and quickly fills out the trip's information. In their hurry, they accidentally put "Spring Break" for their destination instead of "Rome". They fill out some activities they would like to do at their time there on the trip planning page, but wanted some suggestions, so they click the "Get Suggestions" button, but the LLM was not given a proper destination!
+
+When given an ambiguous destination, the LLM picked a some random trip destination and created suggestions for it. To fix this, I changed the prompt to tell it to check if there are existing events in itinerary and use those events to derive a location. It worked (sometimes). The LLM was able to pick out the correct location at times. However, when the itinerary was empty and the LLM had nothing to reference, it began to hallucinate locations. For example, they decided "Spring Break, USA" was a location and began to hallucinate attractions there. I changed the prompt to tell it that if it really couldn't find a location, it should return an error message. This doesn't work however and remains an issue.
+
+2. **Extremely Low Budget** - A user has planned out most of their trip's itinerary and have used up most of their budget. They only have 50 dollars left, but still some considerable amount of time to fill up. The activities on the itinerary are ones they really looked forward to, so they were unwilling to switch them out for cheaper alternatives. Instead, they ask our app for some suggestions，hoping it would know some low budget places.
+
+The LLM is provided with the remaining budget for the trip and it was pretty good at providing activities that are within the budget constraints. For example, they provided mostly free options, plus a few low budget options. However, some of the activities did not seem to be valid or good activities to do on a vacation. For example, the LLM suggested to go to a restaurant and order a single pastry. I changed the prompt and told the LLM to give meanful activities. Afterwards, the LLM suggested to "Enjoy a crepe from a street vendor", which was too vague to be put on a trip itinerary. I changed the prompt to tell the LLM to be more detailed and include names of places instead of giving something generic. It seemed to work, since the LLM began to give better, more specific suggestions after that.
+
+3. **Extremely Packed Schedule** - A user and her friends are super excited about their trip to NYC and had a long list of everything they wanted to do. After filling out their itinerary on the app, they want to add more, since they want to make the most out of their trip. They press the "Get Suggestion" button without realizing that they have already almost overbooked their time.
+
+The LLM provides activities without much regard to how much time the user has for the vacation. I added a prompt to tell it to pay attention to how much time the activities in the itinerary currently take up. If there isn't much time left (if the activities already in the itinerary take up most of the day), then suggest activities that don't take long. The LLM suggested more shorter duration activites compared to before, but there were still some longer activities in there, so this issue is not completely solved.
+
+## Validators
+
+We don't want the LLM to be suggesting locations that the user had already added to the itinerary, since that would not be helpful. So a validator we would want is to check if the location suggested already exists in the plan. Also it would be important to double check if the activities the LLM suggested fits in the user's budget. Another important thing to check for is if the suggestions from the LLM is actually located in the trip destination.
